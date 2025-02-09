@@ -42,7 +42,7 @@ class Vacancy(models.Model):
     # M2M-поля
     cities = models.ManyToManyField(City, related_name='vacancies')
     roles = models.ManyToManyField(Role, related_name='vacancies')
-    key_skills = models.ManyToManyField(KeySkill, related_name='vacancies')
+    key_skills = models.ManyToManyField('KeySkill', related_name='vacancies')
 
     def __str__(self):
         return self.vacancy_name

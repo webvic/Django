@@ -1,0 +1,99 @@
+{% extends "Base_template.html" %}
+{% load static %}
+{% load humanize %}
+        
+{% block title %}Анализируем зарплаты по запросу{% endblock %}
+
+{% block content %}
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <h1 class="text-danger text-center mb-4">Получить аналитику по профессии</h1>
+        <p>Введите название профессии или ключевое слово:</p>
+        {% load static %}
+
+        <form id="searchForm" action="{% url 'parser:results' %}" method="post" class="p-4 bg-white rounded shadow-sm">
+            {% csrf_token %}
+        
+            <!-- Текстовый ввод -->
+            <div class="mb-3">
+                <label for="searchQuery" class="form-label">Название профессии:</label>
+                <input type="text" id="searchQuery" name="queryString" class="form-control" placeholder="ML">
+            </div>
+        
+            <!-- Выбор категории -->
+            <label for="category" class="form-label">Категория:</label>
+            <select id="category" name="category" class="form-select">
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.hh_id == default_category %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+            
+            <!-- Выбор ролей (фильтруем через `category.roles.all`) -->
+            <label for="role" class="form-label">Профессиональная роль:</label>
+            <select id="role" name="professionalRole" multiple class="form-select">
+                {% for role in roles %}
+                    <option value="{{ role.hh_id }}" data-category="{{ role.category.id }}">{{ role.name }}</option>
+                {% endfor %}
+            </select>
+      
+            <!-- Список городов -->
+            <div class="mb-3">
+                <label for="cities">Выберите город (без выбора - все):</label>
+                <select id="cities" name="areas" multiple class="form-select">
+                    {% for city in cities %}
+                    <option value="{{ city.hh_id }}">{{ city.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        
+            <!-- Скрытые поля для передачи списка ролей и городов -->
+            <input type="hidden" id="selected_roles" name="roles">
+            <input type="hidden" id="selected_cities" name="cities">
+        
+            <button type="submit" class="btn btn-danger mx-auto d-block" style="width: 50%;">Получить данные</button>
+        </form>
+
+{% endblock %}
+
+{% block scripts %}  
+        
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let categorySelect = document.getElementById("category");
+        let roleSelect = document.getElementById("role");
+
+        function filterRoles() {
+            let selectedCategory = categorySelect.value;
+            for (let option of roleSelect.options) {
+                if (option.getAttribute("data-category") === selectedCategory) {
+                    option.hidden = false;  // Показываем подходящие роли
+                    option.disabled = false;
+                } else {
+                    option.hidden = true;   // Скрываем остальные
+                    option.disabled = true;
+                }
+            }
+        }
+
+        // 🔥 Подключаем обработчик изменений категории
+        categorySelect.addEventListener("change", filterRoles);
+
+        // 🔥 Устанавливаем дефолтную категорию из шаблона
+        let defaultCategory = "{{ default_category }}";
+        categorySelect.value = defaultCategory;
+        
+        // 🔥 Применяем фильтр сразу при загрузке страницы
+        filterRoles();
+    });
+</script>
+
+    
+    
+
+    <!-- Подключение скрипта загрузки -->
+    <script src="{% static 'js/form_handler.js' %}"></script>
+
+
+{% endblock %}        
