@@ -21,6 +21,7 @@ class City(models.Model):
     name = models.CharField(max_length=255, unique=True)
     hh_id = models.IntegerField(unique=True)
     parent = models.ForeignKey("self", null=True, blank=True, on_delete=models.CASCADE, related_name="subcities")
+    population = models.IntegerField(null=True, blank=True)  # 🔥 Новое поле
 
     def __str__(self):
         return self.name

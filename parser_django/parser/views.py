@@ -2,8 +2,8 @@ from django.shortcuts import render
 from .models import *
 from django.db.models import F, FloatField, ExpressionWrapper, Q, Case, Value, When, IntegerField
 from django.db.models.functions import Coalesce
-from .constants import *  
-from django.http import JsonResponse
+from .constants import PROVERBS  
+from .forms import JobSearchForm
 import random
 
 proverbs = PROVERBS.strip().splitlines()
@@ -25,33 +25,18 @@ def main_view(request):
     return render(request, 'parser/index.html', {'vacancies': vacancies})
 
 # Форма поиска
-def form(request):
+def form_view(request):
     """Обрабатывает форму поиска и передаёт данные в шаблон"""
+    form = JobSearchForm(request.POST or None)
     
-    categories = Category.objects.all().order_by("name")  # Берем все объекты категорий
-    roles = Role.objects.all()  # Все роли
-
-    population_case = Case(
-        *[When(name=city, then=Value(pop)) for city, pop in MILLION_CITIES.items()],
-        output_field=IntegerField()
-    )
-
-    top_cities = (
-        City.objects
-        .filter(name__in=MILLION_CITIES.keys())
-        .annotate(_sort_population=population_case)
-        .values("hh_id", "name")
-        .order_by("-_sort_population")[:10]
-    )
+    # Выбираем случайную цитату
+    random_proverb = random.choice(proverbs)
 
     return render(
         request, "parser/form.html",
         {
-            "categories": categories,
-            "roles": roles,  # Теперь передаём все роли
-            "cities": top_cities,
-            "default_category": DEFAULT_CATEGORY_HH_ID,
-            "proverb": random.choice(proverbs),  # Передаём пословицу в шаблон
+            "form": form,  # 🔥 Передаём форму в шаблон
+            "proverb": random_proverb,  # 🔥 Передаём цитату в шаблон
         }
     )
 
