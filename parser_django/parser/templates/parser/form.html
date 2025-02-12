@@ -1,0 +1,62 @@
+{% extends "Base_template.html" %}
+{% load static %}
+{% load humanize %}
+        
+{% block title %}Анализируем зарплаты по запросу{% endblock %}
+
+{% block content %}
+
+    <!-- Main Content -->
+    <div class="container mt-5">
+        <h1 class="text-danger text-center mb-4">Получить аналитику по профессии</h1>
+        <p>Введите название профессии или ключевое слово:</p>
+        {% load static %}
+
+        <form method="post" action="{% url 'parser:job_search_form' %}">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-danger mx-auto d-block" style="width: 50%;">Получить данные</button>
+        </form>      
+
+{% endblock %}
+
+{% block scripts %}  
+        
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        let categorySelect = document.getElementById("category");
+        let roleSelect = document.getElementById("role");
+
+        function filterRoles() {
+            let selectedCategory = categorySelect.value;
+            for (let option of roleSelect.options) {
+                if (option.getAttribute("data-category") === selectedCategory) {
+                    option.hidden = false;  // Показываем подходящие роли
+                    option.disabled = false;
+                } else {
+                    option.hidden = true;   // Скрываем остальные
+                    option.disabled = true;
+                }
+            }
+        }
+
+        // 🔥 Подключаем обработчик изменений категории
+        categorySelect.addEventListener("change", filterRoles);
+
+        // 🔥 Устанавливаем дефолтную категорию из шаблона
+        let defaultCategory = "{{ default_category }}";
+        categorySelect.value = defaultCategory;
+        
+        // 🔥 Применяем фильтр сразу при загрузке страницы
+        filterRoles();
+    });
+</script>
+
+    
+    
+
+    <!-- Подключение скрипта загрузки -->
+    <script src="{% static 'js/form_handler.js' %}"></script>
+
+
+{% endblock %}        
